@@ -17,10 +17,12 @@ export default function App() {
   const [settings, setSettings] = useLocalStorage('wadia_settings', {
     officeLocation: '123 Office Plaza, San Francisco, CA',
     mileageRate: 0.70,
+    gcalClientId: '',
   });
   const [activeTab, setActiveTab] = useState('log');
   const [showHelp, setShowHelp] = useState(false);
   const [logTripEvent, setLogTripEvent] = useState(null);
+  const [gcalToken, setGcalToken] = useState('');
 
   // Computed metrics (derived, never stored)
   const yearTrips = filterCurrentYear(trips);
@@ -45,6 +47,10 @@ export default function App() {
 
   function saveSettings(newSettings) {
     const rateChanged = newSettings.mileageRate !== settings.mileageRate;
+    // If the client ID changed, drop the in-memory token so the user re-authenticates
+    if (newSettings.gcalClientId !== settings.gcalClientId) {
+      setGcalToken('');
+    }
     setSettings(newSettings);
     if (rateChanged) {
       setTrips(
@@ -105,10 +111,19 @@ export default function App() {
             <CalendarTab
               loggedEventIds={loggedEventIds}
               onLogTrip={(event) => setLogTripEvent(event)}
+              gcalToken={gcalToken}
+              gcalClientId={settings.gcalClientId}
+              onGcalConnect={setGcalToken}
             />
           )}
           {activeTab === 'settings' && (
-            <SettingsTab settings={settings} onSave={saveSettings} />
+            <SettingsTab
+              settings={settings}
+              onSave={saveSettings}
+              gcalToken={gcalToken}
+              onGcalConnect={setGcalToken}
+              onGcalDisconnect={() => setGcalToken('')}
+            />
           )}
         </div>
       </main>

@@ -1,13 +1,17 @@
 import { useState } from 'react';
-import { Save } from 'lucide-react';
+import { Save, Calendar, CheckCircle2, Unlink } from 'lucide-react';
+import { initTokenClient } from '../../utils/googleCalendar';
 
-export function SettingsTab({ settings, onSave }) {
+export function SettingsTab({ settings, onSave, gcalToken, onGcalConnect, onGcalDisconnect }) {
   const [form, setForm] = useState({
     officeLocation: settings.officeLocation,
     mileageRate: settings.mileageRate,
+    gcalClientId: settings.gcalClientId || '',
   });
   const [errors, setErrors] = useState({});
   const [saved, setSaved] = useState(false);
+  const [gcalError, setGcalError] = useState('');
+  const [connecting, setConnecting] = useState(false);
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -34,9 +38,36 @@ export function SettingsTab({ settings, onSave }) {
     onSave({
       officeLocation: form.officeLocation.trim(),
       mileageRate: parseFloat(parseFloat(form.mileageRate).toFixed(4)),
+      gcalClientId: form.gcalClientId.trim(),
     });
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
+  }
+
+  function handleConnect() {
+    setGcalError('');
+    if (!form.gcalClientId.trim()) {
+      setGcalError('Enter your Client ID and save Settings first.');
+      return;
+    }
+    setConnecting(true);
+    const client = initTokenClient(
+      form.gcalClientId.trim(),
+      (token) => {
+        onGcalConnect(token);
+        setConnecting(false);
+      },
+      (err) => {
+        setGcalError(err);
+        setConnecting(false);
+      }
+    );
+    if (client) client.requestAccessToken();
+  }
+
+  function handleDisconnect() {
+    onGcalDisconnect();
+    setGcalError('');
   }
 
   return (
@@ -103,6 +134,58 @@ export function SettingsTab({ settings, onSave }) {
           <strong>Note:</strong> The IRS standard mileage rate for 2026 is <strong>$0.70/mile</strong> for
           business travel. Changing the rate will recalculate deductions for all existing trips.
           Always verify the current rate at <strong>irs.gov</strong> before filing.
+        </div>
+
+        {/* ── Google Calendar ── */}
+        <div className="gcal-section">
+          <div className="gcal-section-title">
+            <Calendar size={15} style={{ display: 'inline', marginRight: 6, verticalAlign: 'middle' }} />
+            Google Calendar
+          </div>
+
+          <div className="form-group">
+            <label className="form-label" htmlFor="gcalClientId">
+              OAuth Client ID
+            </label>
+            <input
+              id="gcalClientId"
+              name="gcalClientId"
+              type="text"
+              className="form-input"
+              value={form.gcalClientId}
+              onChange={handleChange}
+              placeholder="xxxxxx.apps.googleusercontent.com"
+              spellCheck={false}
+            />
+            <span className="calc-status-hint">
+              From Google Cloud Console → APIs &amp; Services → Credentials
+            </span>
+          </div>
+
+          <div className="gcal-status-row">
+            {gcalToken ? (
+              <>
+                <span className="gcal-status-connected">
+                  <CheckCircle2 size={14} />
+                  Connected
+                </span>
+                <button className="btn btn-secondary" onClick={handleDisconnect}>
+                  <Unlink size={13} />
+                  Disconnect
+                </button>
+              </>
+            ) : (
+              <button
+                className="btn btn-primary"
+                onClick={handleConnect}
+                disabled={connecting}
+              >
+                <Calendar size={14} />
+                {connecting ? 'Connecting…' : 'Connect Google Calendar'}
+              </button>
+            )}
+          </div>
+          {gcalError && <span className="form-error" style={{ display: 'block', marginTop: 8 }}>{gcalError}</span>}
         </div>
       </div>
     </div>
