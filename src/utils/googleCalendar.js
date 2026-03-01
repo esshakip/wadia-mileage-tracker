@@ -27,15 +27,15 @@ export function initTokenClient(clientId, onToken, onError) {
  * Throws 'AUTH_EXPIRED' error if the token is no longer valid.
  */
 export async function fetchCalendarEvents(accessToken) {
-  const now = new Date().toISOString();
-  const sixtyDaysLater = new Date(Date.now() + 60 * 24 * 60 * 60 * 1000).toISOString();
+  const twelveMonthsAgo = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString();
+  const thirtyDaysAhead = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
 
   const params = new URLSearchParams({
-    timeMin: now,
-    timeMax: sixtyDaysLater,
+    timeMin: twelveMonthsAgo,
+    timeMax: thirtyDaysAhead,
     singleEvents: 'true',
     orderBy: 'startTime',
-    maxResults: '100',
+    maxResults: '500',
   });
 
   const res = await fetch(
@@ -51,7 +51,8 @@ export async function fetchCalendarEvents(accessToken) {
   const data = await res.json();
   return (data.items || [])
     .filter((e) => e.summary && e.location)
-    .map(normalizeEvent);
+    .map(normalizeEvent)
+    .reverse(); // most recent first
 }
 
 function normalizeEvent(e) {

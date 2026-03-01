@@ -93,8 +93,8 @@ export function CalendarTab({ loggedEventIds, onLogTrip, gcalToken, gcalClientId
             {loading
               ? 'Loading…'
               : events.length > 0
-              ? `${events.length} upcoming event${events.length !== 1 ? 's' : ''} with a location`
-              : 'No upcoming events with a location'}
+              ? `${events.length} event${events.length !== 1 ? 's' : ''} with a location — past 12 months + 30 days ahead`
+              : 'No events with a location found'}
           </p>
         </div>
         <button
@@ -114,7 +114,7 @@ export function CalendarTab({ loggedEventIds, onLogTrip, gcalToken, gcalClientId
       {!loading && !error && events.length === 0 && (
         <div className="calendar-empty">
           <Calendar size={40} />
-          <p>No upcoming events with a location found in the next 60 days.</p>
+          <p>No events with a location found in the past 12 months or next 30 days.</p>
         </div>
       )}
 
