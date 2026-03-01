@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { PlusCircle } from 'lucide-react';
+import { getDrivingDistanceMiles } from '../../utils/distanceCalculator';
 
 const TODAY = new Date().toISOString().slice(0, 10);
 
@@ -17,11 +18,42 @@ export function ManualTab({ officeLocation, onAddTrip }) {
   const [form, setForm] = useState(() => initialForm(officeLocation));
   const [errors, setErrors] = useState({});
   const [success, setSuccess] = useState(false);
+  const [calcLoading, setCalcLoading] = useState(false);
+  const [calcError, setCalcError] = useState('');
+  const debounceTimer = useRef(null);
+
+  useEffect(() => {
+    clearTimeout(debounceTimer.current);
+
+    if (!form.start.trim() || !form.end.trim()) {
+      setCalcLoading(false);
+      setCalcError('');
+      return;
+    }
+
+    setCalcLoading(true);
+    setCalcError('');
+
+    debounceTimer.current = setTimeout(() => {
+      getDrivingDistanceMiles(form.start, form.end)
+        .then((miles) => {
+          setForm((f) => ({ ...f, distance: String(miles) }));
+          setCalcLoading(false);
+        })
+        .catch(() => {
+          setCalcError('Could not calculate distance. Enter manually.');
+          setCalcLoading(false);
+        });
+    }, 800);
+
+    return () => clearTimeout(debounceTimer.current);
+  }, [form.start, form.end]);
 
   function handleChange(e) {
     const { name, value } = e.target;
     setForm((f) => ({ ...f, [name]: value }));
     if (errors[name]) setErrors((e) => ({ ...e, [name]: '' }));
+    if (name === 'distance' && calcError) setCalcError('');
   }
 
   function validate() {
@@ -52,6 +84,8 @@ export function ManualTab({ officeLocation, onAddTrip }) {
     });
     setForm(initialForm(officeLocation));
     setErrors({});
+    setCalcError('');
+    setCalcLoading(false);
     setSuccess(true);
     setTimeout(() => setSuccess(false), 3000);
   }
@@ -84,10 +118,13 @@ export function ManualTab({ officeLocation, onAddTrip }) {
               min="0.1"
               step="0.1"
               className={`form-input ${errors.distance ? 'error' : ''}`}
-              placeholder="e.g. 12.5"
+              placeholder={calcLoading ? 'Calculating…' : 'e.g. 12.5'}
               value={form.distance}
+              disabled={calcLoading}
               onChange={handleChange}
             />
+            {calcLoading && <span className="calc-status-hint">Calculating driving distance…</span>}
+            {calcError && <span className="form-error">{calcError}</span>}
             {errors.distance && <span className="form-error">{errors.distance}</span>}
           </div>
         </div>
