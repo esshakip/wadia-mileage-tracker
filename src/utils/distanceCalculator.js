@@ -2,8 +2,16 @@ const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
 const OSRM_URL = 'https://router.project-osrm.org/route/v1/driving';
 const USER_AGENT = 'wadia-mileage-tracker/1.0';
 
+function extractGeocodableAddress(address) {
+  // Google Calendar often formats locations as "Venue Name (123 Street, City, State)"
+  // Nominatim can't handle the venue name prefix — extract just the part in parentheses.
+  const match = address.match(/\(([^)]+)\)/);
+  return match ? match[1].trim() : address.trim();
+}
+
 export async function geocodeAddress(address) {
-  const url = `${NOMINATIM_URL}?q=${encodeURIComponent(address)}&format=json&limit=1`;
+  const cleaned = extractGeocodableAddress(address);
+  const url = `${NOMINATIM_URL}?q=${encodeURIComponent(cleaned)}&format=json&limit=1`;
   const res = await fetch(url, { headers: { 'User-Agent': USER_AGENT } });
   if (!res.ok) throw new Error(`Geocoding request failed (${res.status})`);
   const data = await res.json();
