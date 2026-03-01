@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background -->
+  <rect width="512" height="512" rx="80" fill="#001F3F"/>
+  <!-- Road -->
+  <rect x="0" y="358" width="512" height="28" rx="0" fill="#00BFA5" opacity="0.2"/>
+  <!-- Car body -->
+  <rect x="72" y="255" width="368" height="85" rx="10" fill="#00BFA5"/>
+  <!-- Car roof/cabin -->
+  <path d="M 155 255 L 188 178 L 322 178 L 358 255 Z" fill="#00BFA5"/>
+  <!-- Windshield -->
+  <path d="M 168 251 L 196 186 L 316 186 L 346 251 Z" fill="#001F3F" opacity="0.55"/>
+  <!-- Front wheel -->
+  <circle cx="170" cy="352" r="42" fill="#0d1f30" stroke="#00BFA5" stroke-width="14"/>
+  <circle cx="170" cy="352" r="12" fill="#00BFA5" opacity="0.45"/>
+  <!-- Rear wheel -->
+  <circle cx="340" cy="352" r="42" fill="#0d1f30" stroke="#00BFA5" stroke-width="14"/>
+  <circle cx="340" cy="352" r="12" fill="#00BFA5" opacity="0.45"/>
+  <!-- Dollar badge -->
+  <circle cx="392" cy="132" r="60" fill="#001F3F" stroke="#00BFA5" stroke-width="9"/>
+  <text x="392" y="157" text-anchor="middle" font-family="system-ui,sans-serif" font-size="72" font-weight="700" fill="#00BFA5">$</text>
+</svg>
