@@ -407,6 +407,12 @@ tbody td {
   color: var(--color-error);
 }
 
+.calc-status-hint {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
 .form-footer {
   display: flex;
   justify-content: flex-end;
