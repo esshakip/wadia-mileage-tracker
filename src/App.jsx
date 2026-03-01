@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useLocalStorage } from './hooks/useLocalStorage';
-import { computeDeduction, filterCurrentYear, filterCurrentMonth, getCurrentYear } from './utils/calculations';
+import { computeDeduction, filterCurrentMonth } from './utils/calculations';
 import { Header } from './components/Header';
 import { DashboardCards } from './components/DashboardCards';
 import { TabBar } from './components/TabBar';
@@ -25,11 +25,10 @@ export default function App() {
   const [gcalToken, setGcalToken] = useState('');
 
   // Computed metrics (derived, never stored)
-  const yearTrips = filterCurrentYear(trips);
-  const totalTrips = yearTrips.length;
-  const totalMiles = yearTrips.reduce((sum, t) => sum + Number(t.distance), 0);
+  const totalTrips = trips.length;
+  const totalMiles = trips.reduce((sum, t) => sum + Number(t.distance), 0);
   const thisMonthMiles = filterCurrentMonth(trips).reduce((sum, t) => sum + Number(t.distance), 0);
-  const estDeduction = yearTrips.reduce((sum, t) => sum + Number(t.deduction), 0);
+  const estDeduction = trips.reduce((sum, t) => sum + Number(t.deduction), 0);
 
   function addTrip(tripData) {
     const deduction = computeDeduction(tripData.distance, settings.mileageRate);
@@ -92,7 +91,6 @@ export default function App() {
           thisMonthMiles={thisMonthMiles}
           estDeduction={estDeduction}
           mileageRate={settings.mileageRate}
-          year={getCurrentYear()}
         />
 
         <TabBar activeTab={activeTab} onTabChange={setActiveTab} />

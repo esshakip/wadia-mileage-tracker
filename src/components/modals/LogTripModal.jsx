@@ -26,9 +26,9 @@ export function LogTripModal({ event, officeLocation, onConfirm, onClose }) {
           setDistance(String(miles));
           setCalcLoading(false);
         })
-        .catch(() => {
+        .catch((err) => {
           if (cancelled) return;
-          setCalcError('Could not calculate distance. Enter manually.');
+          setCalcError(err.message || 'Could not calculate distance. Enter manually.');
           setCalcLoading(false);
         });
     }, 300);

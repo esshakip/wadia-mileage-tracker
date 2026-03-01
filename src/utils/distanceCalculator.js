@@ -12,10 +12,11 @@ export async function geocodeAddress(address) {
 }
 
 export async function getDrivingDistanceMiles(startAddress, endAddress) {
-  const [start, end] = await Promise.all([
-    geocodeAddress(startAddress),
-    geocodeAddress(endAddress),
-  ]);
+  // Geocode sequentially — Nominatim enforces 1 req/second and rejects
+  // simultaneous requests with a 429, so Promise.all is not safe here.
+  const start = await geocodeAddress(startAddress);
+  await new Promise((r) => setTimeout(r, 1100));
+  const end = await geocodeAddress(endAddress);
 
   const url = `${OSRM_URL}/${start.lon},${start.lat};${end.lon},${end.lat}?overview=false`;
   const res = await fetch(url);

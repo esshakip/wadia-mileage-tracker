@@ -12,21 +12,20 @@ function MetricCard({ icon, iconClass, value, label, sublabel }) {
   );
 }
 
-export function DashboardCards({ totalTrips, totalMiles, thisMonthMiles, estDeduction, mileageRate, year }) {
+export function DashboardCards({ totalTrips, totalMiles, thisMonthMiles, estDeduction, mileageRate }) {
   return (
     <div className="dashboard-cards">
       <MetricCard
         icon={<Car size={18} />}
         iconClass="teal"
         value={totalTrips}
-        label="Trips This Year"
+        label="Total Trips"
       />
       <MetricCard
         icon={<MapPin size={18} />}
         iconClass="navy"
         value={formatMiles(totalMiles)}
         label="Total Miles"
-        sublabel={`${year} YTD`}
       />
       <MetricCard
         icon={<Calendar size={18} />}
@@ -39,7 +38,7 @@ export function DashboardCards({ totalTrips, totalMiles, thisMonthMiles, estDedu
         iconClass="green"
         value={formatCurrency(estDeduction)}
         label="Est. Deduction"
-        sublabel={`@$${Number(mileageRate).toFixed(2)}/mile (${year})`}
+        sublabel={`@$${Number(mileageRate).toFixed(2)}/mile`}
       />
     </div>
   );
