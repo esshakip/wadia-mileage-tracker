@@ -1,9 +1,34 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, MapPin } from 'lucide-react';
+import { getDrivingDistanceMiles } from '../../utils/distanceCalculator';
 
 export function LogTripModal({ event, officeLocation, onConfirm, onClose }) {
   const [distance, setDistance] = useState('');
   const [error, setError] = useState('');
+  const [calcLoading, setCalcLoading] = useState(false);
+  const [calcError, setCalcError] = useState('');
+
+  useEffect(() => {
+    if (!officeLocation || !event.location) return;
+
+    let cancelled = false;
+    setCalcLoading(true);
+    setCalcError('');
+
+    getDrivingDistanceMiles(officeLocation, event.location)
+      .then((miles) => {
+        if (cancelled) return;
+        setDistance(String(miles));
+        setCalcLoading(false);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setCalcError('Could not calculate distance. Enter manually.');
+        setCalcLoading(false);
+      });
+
+    return () => { cancelled = true; };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleConfirm() {
     const val = parseFloat(distance);
@@ -60,14 +85,17 @@ export function LogTripModal({ event, officeLocation, onConfirm, onClose }) {
               min="0.1"
               step="0.1"
               className={`form-input ${error ? 'error' : ''}`}
-              placeholder="e.g. 14.2"
+              placeholder={calcLoading ? 'Calculating…' : 'e.g. 14.2'}
               value={distance}
+              disabled={calcLoading}
               onChange={(e) => {
                 setDistance(e.target.value);
                 if (error) setError('');
               }}
-              autoFocus
+              autoFocus={!calcLoading}
             />
+            {calcLoading && <span className="calc-status-hint">Calculating driving distance…</span>}
+            {calcError && <span className="form-error">{calcError}</span>}
             {error && <span className="form-error">{error}</span>}
           </div>
         </div>
@@ -76,7 +104,7 @@ export function LogTripModal({ event, officeLocation, onConfirm, onClose }) {
           <button className="btn btn-secondary" onClick={onClose}>
             Cancel
           </button>
-          <button className="btn btn-primary" onClick={handleConfirm}>
+          <button className="btn btn-primary" onClick={handleConfirm} disabled={calcLoading}>
             Log Trip
           </button>
         </div>
