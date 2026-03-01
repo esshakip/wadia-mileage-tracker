@@ -15,19 +15,25 @@ export function LogTripModal({ event, officeLocation, onConfirm, onClose }) {
     setCalcLoading(true);
     setCalcError('');
 
-    getDrivingDistanceMiles(officeLocation, event.location)
-      .then((miles) => {
-        if (cancelled) return;
-        setDistance(String(miles));
-        setCalcLoading(false);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setCalcError('Could not calculate distance. Enter manually.');
-        setCalcLoading(false);
-      });
+    // Delay prevents React StrictMode's double-invoke from firing two
+    // simultaneous Nominatim requests (which triggers a 429 rate-limit).
+    // StrictMode cleanup clears the timer before it fires on the first pass;
+    // only the second pass actually reaches the API.
+    const timer = setTimeout(() => {
+      getDrivingDistanceMiles(officeLocation, event.location)
+        .then((miles) => {
+          if (cancelled) return;
+          setDistance(String(miles));
+          setCalcLoading(false);
+        })
+        .catch(() => {
+          if (cancelled) return;
+          setCalcError('Could not calculate distance. Enter manually.');
+          setCalcLoading(false);
+        });
+    }, 300);
 
-    return () => { cancelled = true; };
+    return () => { cancelled = true; clearTimeout(timer); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   function handleConfirm() {
